@@ -1,5 +1,8 @@
 #include <list>
 #include <cassert>
+#include <stdlib.h>
+#include <cstring>
+#include <iostream>
 
 class SmallAllocator {
     struct mem_region
@@ -33,7 +36,7 @@ void* SmallAllocator::Alloc(unsigned int size)
 {
     auto const& back = mems_.back();
     
-    if(back.ptr - Memory + back.size + size > mem_size)
+    if(back != nullptr && (back.ptr - Memory + back.size + size > mem_size))
     {
         return nullptr;
     }
@@ -54,7 +57,7 @@ void* SmallAllocator::ReAlloc(void* pointer, unsigned int size)
         auto buf = new char[ptr->size];
         memcpy(buf, ptr->ptr, ptr->size);
         auto new_mem = static_cast<char*>(Alloc(size));
-        for (auto i = 0; i < ptr->size; ++i)
+        for (size_t i = 0; i < ptr->size; ++i)
         {
             new_mem[i] = buf[i];
         }
@@ -94,7 +97,9 @@ SmallAllocator::mem_region* SmallAllocator::find(char* ptr)
 
 void tests()
 {
+    std::cout << "In tests" << std::endl;
     SmallAllocator allocator{};
+    std::cout << "allocator created" << std::endl;
 
     auto mem_reg = static_cast<int*>(allocator.Alloc(10));
     
